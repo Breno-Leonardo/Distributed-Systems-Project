@@ -54,7 +54,10 @@ class ForcaServer:
             data = str(self.idClient).encode()
             client_socket.send(data)
             self.idClient=self.idClient+1
+            self.lock.acquire()
             self.enviar_estado_jogo(client_socket)
+            self.lock.release()
+           
             thread = threading.Thread(target=self.lidar_com_cliente, args=(client_socket,))
             thread.start()
 
