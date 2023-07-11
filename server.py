@@ -38,7 +38,7 @@ class ForcaServer:
         self.letras_acertadas = []
         self.tentativas = 0
         self.letras_erradas = []
-        self.jogador_atual = 0
+        self.jogador_atual = 0 #index do jogador atual na lista de jogadores
         self.jogo_iniciado = False
         self.idClient = 0
         self.rodada = 1
@@ -69,7 +69,11 @@ class ForcaServer:
             reset = False
             data = client_socket.recv(1024).decode()
             if not data:
-                del self.jogadores[self.jogador_atual]
+                if(self.jogador_atual==len(self.jogadores)-1):
+                    del self.jogadores[self.jogador_atual]
+                    self.jogador_atual=0
+                else:
+                    del self.jogadores[self.jogador_atual]
                 self.client_sockets.remove(client_socket)
                 client_socket.close()
                 self.lock.acquire()

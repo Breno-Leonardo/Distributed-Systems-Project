@@ -87,7 +87,7 @@ class ForcaClient:
                 elif (dataSplit[0] == "winAnother"):
                     print("Jogador "  +dataSplit[1] + " ganhou. A palavra era "+dataSplit[2])
                 elif (dataSplit[0] == "lose"):
-                    self.printForca(7)
+                    self.printForca(0)
                     print("Acabaram as tentativas, a palavra era "+dataSplit[1])
                     print(" GAME OVER. Resetando o jogo...")
                     self.estado_jogo = None
