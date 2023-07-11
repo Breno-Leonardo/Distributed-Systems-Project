@@ -145,7 +145,7 @@ class ForcaClient:
                 print('Aguardando sua vez de jogar...')
 
 def main():
-    host = ''
+    host = '192.168.100.21'
     port = 5555
 
     forca_client = ForcaClient(host, port)

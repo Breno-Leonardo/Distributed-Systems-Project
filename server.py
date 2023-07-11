@@ -2,12 +2,14 @@ import random
 import socket
 import threading
 
+
 class ForcaServer:
     def __init__(self, host, port):
         self.host = host
         self.port = port
         self.server_socket = None
         self.client_sockets = []
+        self.jogadores=[]
         self.lock = threading.Lock()
         self.palavras_dicas = [
             ('cachorro', 'Melhor amigo do homem, conhecido por sua lealdade e companheirismo'),
@@ -38,7 +40,7 @@ class ForcaServer:
         self.letras_erradas = []
         self.jogador_atual = 0
         self.jogo_iniciado = False
-        self.idClient=0
+        self.idClient = 0
         self.rodada = 1
 
     def iniciar_servidor(self):
@@ -53,21 +55,28 @@ class ForcaServer:
             self.client_sockets.append(client_socket)
             data = str(self.idClient).encode()
             client_socket.send(data)
-            self.idClient=self.idClient+1
+            self.jogadores.append(self.idClient)
+            self.idClient = self.idClient + 1
             self.lock.acquire()
             self.enviar_estado_jogo(client_socket)
             self.lock.release()
-           
+
             thread = threading.Thread(target=self.lidar_com_cliente, args=(client_socket,))
             thread.start()
 
     def lidar_com_cliente(self, client_socket):
         while True:
-            reset=False
+            reset = False
             data = client_socket.recv(1024).decode()
             if not data:
+                del self.jogadores[self.jogador_atual]
                 self.client_sockets.remove(client_socket)
                 client_socket.close()
+                self.lock.acquire()
+                for client in self.client_sockets:
+                    print("client", client)
+                    self.enviar_estado_jogo(client)
+                self.lock.release()
                 break
 
             tipo_tentativa, chute = data.split()
@@ -75,20 +84,21 @@ class ForcaServer:
             if self.jogador_atual == self.client_sockets.index(client_socket):
                 if tipo_tentativa == 'palavra':
                     if chute == self.palavra_secreta:
-                        self.enviar_mensagem(client_socket, 'win '+self.palavra_secreta)
-                        count=0
+                        self.enviar_mensagem(client_socket, 'win ' + self.palavra_secreta)
+                        count = 0
                         for c in self.client_sockets:
-                            if(count != self.jogador_atual):
-                                self.enviar_mensagem(c, 'winAnother' +" "+str(self.jogador_atual)+" "+ self.palavra_secreta)
-                            count+=1
-                        reset=True
+                            if (count != self.jogador_atual):
+                                self.enviar_mensagem(c, 'winAnother' + " " + str(
+                                    self.jogador_atual) + " " + self.palavra_secreta)
+                            count += 1
+                        reset = True
 
                     else:
                         self.tentativas -= 1
                         if self.tentativas == 0:
                             for c in self.client_sockets:
                                 self.enviar_mensagem(c, 'lose' + " " + self.palavra_secreta)
-                            reset=True
+                            reset = True
 
 
                 elif tipo_tentativa == 'letra':
@@ -113,13 +123,13 @@ class ForcaServer:
                             self.tentativas -= 1
                             if self.tentativas == 0:
                                 for c in self.client_sockets:
-                                    self.enviar_mensagem(c, 'lose'+ " " + self.palavra_secreta)
-                                reset=True
+                                    self.enviar_mensagem(c, 'lose' + " " + self.palavra_secreta)
+                                reset = True
 
                 if ((self.jogador_atual + 1) % len(self.client_sockets) == 0):
                     self.rodada += 1
 
-                if(reset):
+                if (reset):
                     self.resetar_jogo()
 
                 self.jogador_atual = (self.jogador_atual + 1) % len(self.client_sockets)
@@ -132,6 +142,7 @@ class ForcaServer:
         client_socket.close()
 
     def enviar_estado_jogo(self, client_socket):
+
         estado_jogo = {
             'palavra_secreta': self.palavra_secreta,
             'dica': self.dica,
@@ -140,7 +151,7 @@ class ForcaServer:
             'tentativas_restantes': self.tentativas,
             'letras_erradas': self.letras_erradas,
             'rodada': self.rodada,
-            'jogador_atual': self.jogador_atual
+            'jogador_atual': self.jogadores[self.jogador_atual]
         }
         data = str(estado_jogo).encode()
         client_socket.send(data)
@@ -160,7 +171,6 @@ class ForcaServer:
         print('Jogo iniciado!')
         print('Aguardando jogadores...')
 
-
         self.lock.acquire()
         for client in self.client_sockets:
             self.enviar_estado_jogo(client)
@@ -175,12 +185,13 @@ class ForcaServer:
 
 
 def main():
-    host = ''
+    host = '192.168.100.21'
     port = 5555
 
     forca_server = ForcaServer(host, port)
     threading.Thread(target=forca_server.iniciar_jogo).start()
     forca_server.iniciar_servidor()
+
 
 if __name__ == '__main__':
     main()
