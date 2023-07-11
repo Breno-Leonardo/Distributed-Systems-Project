@@ -17,6 +17,63 @@ class ForcaClient:
         print('Conectado ao servidor. ')
         print('Seu Id é '+ self.id)
 
+    def printForca(self,tentativas):
+        if(tentativas==0):
+            print("______     ")
+            print("|    |     ")
+            print("|    O     ")
+            print("|   /|\    ")
+            print("|    |     ")
+            print("|   / \    ")
+        elif (tentativas== 1):
+            print("______     ")
+            print("|    |     ")
+            print("|    O     ")
+            print("|   /|\    ")
+            print("|    |     ")
+            print("|   /      ")
+        elif (tentativas== 2):
+            print("______     ")
+            print("|    |     ")
+            print("|    O     ")
+            print("|   /|\    ")
+            print("|    |     ")
+            print("|          ")
+        elif (tentativas== 3):
+            print("______     ")
+            print("|    |     ")
+            print("|    O     ")
+            print("|   /|\    ")
+            print("|          ")
+            print("|          ")
+        elif (tentativas== 4):
+            print("______     ")
+            print("|    |     ")
+            print("|    O     ")
+            print("|   /|     ")
+            print("|          ")
+            print("|          ")
+        elif (tentativas== 5):
+            print("______     ")
+            print("|    |     ")
+            print("|    O     ")
+            print("|    |     ")
+            print("|          ")
+            print("|          ")
+        elif (tentativas== 6):
+            print("______     ")
+            print("|    |     ")
+            print("|    O     ")
+            print("|          ")
+            print("|          ")
+            print("|          ")
+        elif (tentativas== 7):
+            print("______     ")
+            print("|    |     ")
+            print("|          ")
+            print("|          ")
+            print("|          ")
+            print("|          ")
     def receber_estado_jogo(self):
         try:
             data = self.client_socket.recv(1024).decode()
@@ -30,6 +87,7 @@ class ForcaClient:
                 elif (dataSplit[0] == "winAnother"):
                     print("Jogador "  +dataSplit[1] + " ganhou. A palavra era "+dataSplit[2])
                 elif (dataSplit[0] == "lose"):
+                    self.printForca(7)
                     print("Acabaram as tentativas, a palavra era "+dataSplit[1])
                     print(" GAME OVER. Resetando o jogo...")
                     self.estado_jogo = None
@@ -39,6 +97,7 @@ class ForcaClient:
                     print('RODADA ', self.estado_jogo['rodada'])
                     print('Dica:', self.estado_jogo['dica'])
                     print('Quantidade de caracteres:', self.estado_jogo['quantidade_caracteres'])
+                    self.printForca(self.estado_jogo['tentativas_restantes'])
                     print('Letras reveladas:', ' '.join(self.estado_jogo['letras_reveladas']))
                     print('Letras erradas tentadas:', ' '.join(self.estado_jogo['letras_erradas']))
                     print('Tentativas restantes:', self.estado_jogo['tentativas_restantes'])
@@ -86,7 +145,7 @@ class ForcaClient:
                 print('Aguardando sua vez de jogar...')
 
 def main():
-    host = '' 
+    host = ''
     port = 5555
 
     forca_client = ForcaClient(host, port)
